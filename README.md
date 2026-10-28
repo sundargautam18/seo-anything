@@ -70,17 +70,24 @@ SEOAnything provides 9 granular, production-tested skills built on the open **Ag
 SEOAnything bundles zero-dependency CLI utilities that both developers and AI agents can execute directly:
 
 ### 1. Automated SEO & GEO Auditor
-Audit local directories, HTML/JSX/Vue/Astro files, or live URLs:
+Audit local directories, Next.js projects, HTML/JSX/Vue/Astro files, or live URLs:
 
 ```bash
-# Audit current repository
+# Audit current repository or Next.js app
 npx seoanything audit .
+
+# Audit a specific Next.js page or component
+npx seoanything audit ./app/blog/[slug]/page.tsx
 
 # Audit a specific production page
 npx seoanything audit https://example.com/blog/my-guide
 ```
 
-**Checks Performed:**
+**Checks & Framework Features:**
+- ✅ **Next.js App Router**: Parses `export const metadata`, dynamic `generateMetadata()`, and `alternates.canonical`
+- ✅ **Next.js `<Image />` & Core Web Vitals**: Detects `priority` / `fetchpriority="high"` for LCP hero optimization and audits `alt` attributes
+- ✅ **Next.js Metadata Files**: Recognizes `app/robots.ts`, `app/sitemap.ts`, and `app/opengraph-image.tsx`
+- ✅ **Next.js JSON-LD**: Audits structured data in `<script type="application/ld+json" dangerouslySetInnerHTML={{ ... }} />`
 - ✅ Title & Meta description presence & length constraints
 - ✅ Viewport configuration (Mobile-first indexing)
 - ✅ Canonical tag validation

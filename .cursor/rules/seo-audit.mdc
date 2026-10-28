@@ -59,18 +59,26 @@ Use this skill to perform rigorous, professional SEO audits on any website or re
 
 ## 2. Running Automated Audits via CLI
 
-You can run automated audits locally using the built-in SEOAnything CLI:
+You can run automated audits locally using the built-in SEOAnything CLI across HTML, Next.js, React, Astro, Vue, Svelte, and Markdown:
 
 ```bash
-# Audit a local repository or directory of HTML/JSX files
+# Audit a local repository or Next.js / React project
 npx seoanything audit .
+
+# Audit a specific Next.js page or component
+npx seoanything audit ./app/blog/[slug]/page.tsx
 
 # Audit a specific production page or URL
 npx seoanything audit https://example.com/blog/guide
-
-# Run headless schema verification
-npx seoanything schema validate ./src/pages/index.html
 ```
+
+### Full Next.js Framework Support:
+- **App Router Static Metadata**: Detects `export const metadata: Metadata = { title, description, openGraph, alternates: { canonical } }`.
+- **App Router Dynamic Metadata**: Detects `export async function generateMetadata(...)` and validates dynamic SEO generation.
+- **Next.js `<Image>` & CWV**: Scans `<Image />` components for `alt` attributes and verifies `priority` / `fetchpriority="high"` for LCP hero images.
+- **Next.js Metadata Files**: Recognizes `app/robots.ts` / `robots.js`, `app/sitemap.ts` / `sitemap.js`, and `app/opengraph-image.tsx`.
+- **Next.js JSON-LD**: Recognizes structured data injected via `<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ... }} />`.
+- **Pages Router**: Fully inspects `next/head` `<Head>` tags across `pages/` routes.
 
 ---
 

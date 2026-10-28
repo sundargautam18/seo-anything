@@ -47,7 +47,7 @@ export function logHeader(title) {
 /**
  * Recursively find all files in a directory matching extensions.
  */
-export function findFiles(dir, extensions = ['.html', '.htm', '.jsx', '.tsx', '.vue', '.svelte', '.astro', '.md', '.mdx'], fileList = []) {
+export function findFiles(dir, extensions = ['.html', '.htm', '.jsx', '.tsx', '.vue', '.svelte', '.astro', '.md', '.mdx', '.js', '.ts'], fileList = []) {
   if (!fs.existsSync(dir)) return fileList;
   
   const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -55,14 +55,27 @@ export function findFiles(dir, extensions = ['.html', '.htm', '.jsx', '.tsx', '.
     const fullPath = path.join(dir, entry.name);
     // Ignore common non-content / build folders
     if (entry.isDirectory()) {
-      if (['node_modules', '.git', '.next', '.nuxt', 'dist', 'build', '.claude', '.agents'].includes(entry.name)) {
+      if (['node_modules', '.git', '.next', '.nuxt', 'dist', 'build', '.claude', '.agents', '.cursor', 'coverage', 'out'].includes(entry.name)) {
         continue;
       }
       findFiles(fullPath, extensions, fileList);
     } else if (entry.isFile()) {
+      const name = entry.name.toLowerCase();
+      // Skip test, spec, and config files
+      if (name.includes('.test.') || name.includes('.spec.') || name.includes('.config.') || name === 'setupTests.js' || name === 'setupTests.ts') {
+        continue;
+      }
       const ext = path.extname(entry.name).toLowerCase();
       if (extensions.includes(ext)) {
-        fileList.push(fullPath);
+        // If it's a .js or .ts file, only include if it looks like a page, layout, route, or is in an app/pages folder
+        if (ext === '.js' || ext === '.ts') {
+          const isNextPage = /page\.[jt]sx?$/i.test(name) || /layout\.[jt]sx?$/i.test(name) || /[/\\](app|pages|routes)[/\\]/i.test(fullPath);
+          if (isNextPage) {
+            fileList.push(fullPath);
+          }
+        } else {
+          fileList.push(fullPath);
+        }
       }
     }
   }

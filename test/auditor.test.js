@@ -59,3 +59,87 @@ test('auditHtml catches missing title, meta description, and alt tags', () => {
   assert.ok(errorCategories.includes('Accessibility/SEO'));
   assert.ok(errorCategories.includes('Technical'));
 });
+
+test('auditHtml correctly recognizes Next.js App Router metadata, <Image priority>, and JSON-LD', () => {
+  const nextAppPage = `
+    import Image from 'next/image';
+    import type { Metadata } from 'next';
+
+    export const metadata: Metadata = {
+      title: 'Next.js App Router SEO Mastery Guide [2026]',
+      description: 'Master server-side rendering, generateMetadata, Core Web Vitals, and JSON-LD structured data in Next.js.',
+      alternates: {
+        canonical: 'https://example.com/blog/nextjs-seo',
+      },
+      openGraph: {
+        title: 'Next.js App Router SEO Mastery Guide',
+        images: ['/og-next.png'],
+      },
+    };
+
+    export default function Page() {
+      const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: 'Next.js App Router SEO Mastery Guide',
+      };
+
+      return (
+        <main>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          />
+          <h1>Next.js App Router SEO Mastery Guide [2026]</h1>
+          <p>Next.js provides built-in support for metadata, sitemaps, robots.ts, and automatic image optimization.</p>
+          <Image
+            src="/hero-next.png"
+            alt="Next.js SEO Architecture"
+            width={1200}
+            height={630}
+            priority
+          />
+        </main>
+      );
+    }
+  `;
+
+  const report = auditHtml(nextAppPage, 'app/blog/page.tsx');
+  assert.equal(report.grade, 'A');
+  assert.ok(report.score >= 90, `Expected score >= 90 for Next.js page, got ${report.score}`);
+  
+  const passCategories = report.passes.map(p => p.category);
+  assert.ok(passCategories.includes('Next.js Metadata'));
+  assert.ok(passCategories.includes('Performance/CWV'));
+  assert.ok(passCategories.includes('Structured Data'));
+  assert.equal(report.title, 'Next.js App Router SEO Mastery Guide [2026]');
+});
+
+test('auditHtml supports dynamic Next.js generateMetadata', () => {
+  const dynamicNextPage = `
+    import Image from 'next/image';
+
+    export async function generateMetadata({ params }): Promise<Metadata> {
+      return {
+        title: 'Dynamic Product - ' + params.id,
+        description: 'Discover full specifications and pricing for product ' + params.id,
+      };
+    }
+
+    export default function ProductPage() {
+      return (
+        <div>
+          <h1>Dynamic Product Page</h1>
+          <Image src="/prod.jpg" alt="Product photo" width={400} height={400} />
+        </div>
+      );
+    }
+  `;
+
+  const report = auditHtml(dynamicNextPage, 'app/products/[id]/page.tsx');
+  assert.ok(report.score >= 80, `Expected score >= 80, got ${report.score}`);
+  assert.ok(['A', 'B'].includes(report.grade));
+  const passCategories = report.passes.map(p => p.category);
+  assert.ok(passCategories.includes('Next.js Metadata'));
+  assert.ok(report.passes.some(p => p.msg.includes('generateMetadata')));
+});

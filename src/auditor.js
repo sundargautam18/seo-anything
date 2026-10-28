@@ -88,28 +88,77 @@ async function auditLocal(targetPath, options) {
  * Audit root domain files
  */
 function auditRootFiles(dir) {
-  const possibleDirs = [dir, path.join(dir, 'public'), path.join(dir, 'static')];
+  const possibleDirs = [
+    dir, 
+    path.join(dir, 'public'), 
+    path.join(dir, 'static'),
+    path.join(dir, 'app'),
+    path.join(dir, 'src', 'app')
+  ];
   
-  const hasFile = (fileName) => {
-    return possibleDirs.some(d => fs.existsSync(path.join(d, fileName)));
+  const hasFile = (...fileNames) => {
+    return fileNames.some(fn => {
+      return possibleDirs.some(d => fs.existsSync(path.join(d, fn))) ||
+             fs.existsSync(path.join(dir, fn)) ||
+             fs.existsSync(path.join(dir, 'app', fn)) ||
+             fs.existsSync(path.join(dir, 'src', 'app', fn));
+    });
   };
 
+  const hasRobots = hasFile('robots.txt', 'robots.ts', 'robots.js');
+  const hasSitemap = hasFile('sitemap.xml', 'sitemap_index.xml', 'sitemap.ts', 'sitemap.js');
+  const hasLlms = hasFile('llms.txt');
+  const hasOgImage = hasFile('opengraph-image.tsx', 'opengraph-image.jpg', 'opengraph-image.png', 'opengraph-image.js');
+
   return {
-    robotsTxt: hasFile('robots.txt'),
-    sitemapXml: hasFile('sitemap.xml') || hasFile('sitemap_index.xml'),
-    llmsTxt: hasFile('llms.txt'),
+    robotsTxt: hasRobots,
+    sitemapXml: hasSitemap,
+    llmsTxt: hasLlms,
+    ogImage: hasOgImage,
   };
 }
 
 /**
- * Core HTML analyzer
+ * Core HTML / Next.js / Component analyzer
  */
 export function auditHtml(html, filePath) {
   const issues = [];
   const passes = [];
   const isDocOrSkill = filePath.endsWith('.md') || filePath.endsWith('.mdx');
 
-  // Parse YAML Frontmatter if present
+  // Detect Next.js environment (App Router or Pages Router)
+  const isNextJs = /\b(page|layout)\.(jsx|tsx|js|ts)$/i.test(filePath) ||
+                   /[/\\](app|pages)[/\\]/i.test(filePath) ||
+                   /from ['"]next\/(image|head|navigation|server|link|font)['"]/i.test(html) ||
+                   /export\s+(const\s+metadata|async\s+function\s+generateMetadata|const\s+viewport)/.test(html);
+
+  // Next.js App Router dynamic metadata check
+  const hasGenerateMetadata = /export\s+async\s+function\s+generateMetadata/i.test(html);
+  if (hasGenerateMetadata) {
+    passes.push({ category: 'Next.js Metadata', msg: 'Dynamic Next.js generateMetadata() function detected.' });
+  }
+
+  // Next.js App Router static metadata extraction
+  let nextMetadata = {};
+  if (/export\s+const\s+metadata\b/.test(html) || /const\s+metadata\b/.test(html)) {
+    const titleMatch = html.match(/title:\s*['"`]([^'"`]+)['"`]/) ||
+                       html.match(/title:\s*\{\s*default:\s*['"`]([^'"`]+)['"`]/);
+    if (titleMatch) nextMetadata.title = titleMatch[1].trim();
+
+    const descMatch = html.match(/description:\s*['"`]([^'"`]+)['"`]/);
+    if (descMatch) nextMetadata.description = descMatch[1].trim();
+
+    const canonicalMatch = html.match(/alternates:\s*\{[\s\S]*?canonical:\s*['"`]([^'"`]+)['"`]/) ||
+                           html.match(/canonical:\s*['"`]([^'"`]+)['"`]/);
+    if (canonicalMatch) nextMetadata.canonical = canonicalMatch[1].trim();
+
+    if (/openGraph:\s*\{/.test(html)) {
+      nextMetadata.hasOpenGraph = true;
+    }
+    passes.push({ category: 'Next.js Metadata', msg: 'Next.js App Router metadata object detected.' });
+  }
+
+  // Parse YAML Frontmatter if present (Astro / Markdown / Skills)
   let fm = {};
   const fmMatch = html.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (fmMatch) {
@@ -129,12 +178,14 @@ export function auditHtml(html, filePath) {
     if (currentKey) fm[currentKey] = currentValue.trim().replace(/^['"> -]+|['"]+$/g, '');
   }
 
-  // 1. Title Tag / Frontmatter Title
+  // 1. Title Tag / Next.js Metadata / Frontmatter Title
   const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
-  let title = titleMatch ? titleMatch[1].trim() : (fm.title || fm.name || null);
+  let title = titleMatch ? titleMatch[1].trim() : (nextMetadata.title || (hasGenerateMetadata ? '[Dynamic generateMetadata()]' : (fm.title || fm.name || null)));
 
   if (!title) {
-    issues.push({ type: 'error', category: 'On-Page', msg: 'Missing <title> tag or frontmatter title.' });
+    issues.push({ type: 'error', category: 'On-Page', msg: 'Missing <title> tag, Next.js metadata.title, or frontmatter title.' });
+  } else if (title === '[Dynamic generateMetadata()]') {
+    passes.push({ category: 'On-Page', msg: 'Title handled dynamically via Next.js generateMetadata().' });
   } else if (title.length < 15 && !isDocOrSkill) {
     issues.push({ type: 'warn', category: 'On-Page', msg: `<title> is too short (${title.length} chars). Aim for 50–60 characters. Title: "${title}"` });
   } else if (title.length > 70) {
@@ -143,13 +194,15 @@ export function auditHtml(html, filePath) {
     passes.push({ category: 'On-Page', msg: `<title> / name is defined (${title.length} chars): "${title}"` });
   }
 
-  // 2. Meta Description / Frontmatter Description
+  // 2. Meta Description / Next.js Metadata / Frontmatter Description
   const metaDescMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']*)["'][^>]*>/i) ||
                         html.match(/<meta[^>]*content=["']([^"']*)["'][^>]*name=["']description["'][^>]*>/i);
-  let metaDesc = metaDescMatch ? metaDescMatch[1].trim() : (fm.description || null);
+  let metaDesc = metaDescMatch ? metaDescMatch[1].trim() : (nextMetadata.description || (hasGenerateMetadata ? '[Dynamic generateMetadata()]' : (fm.description || null)));
 
   if (!metaDesc) {
-    issues.push({ type: 'error', category: 'On-Page', msg: 'Missing meta description or frontmatter description.' });
+    issues.push({ type: 'error', category: 'On-Page', msg: 'Missing meta description tag, Next.js metadata.description, or frontmatter description.' });
+  } else if (metaDesc === '[Dynamic generateMetadata()]') {
+    passes.push({ category: 'On-Page', msg: 'Meta description handled dynamically via Next.js generateMetadata().' });
   } else if (metaDesc.length < 50 && !isDocOrSkill) {
     issues.push({ type: 'warn', category: 'On-Page', msg: `Meta description is too short (${metaDesc.length} chars). Aim for 140–160 characters.` });
   } else if (metaDesc.length > 250 && !isDocOrSkill) {
@@ -158,38 +211,39 @@ export function auditHtml(html, filePath) {
     passes.push({ category: 'On-Page', msg: `Meta description is defined (${metaDesc.length} chars).` });
   }
 
-  // 3. Viewport Meta Tag
-  const viewportMatch = html.match(/<meta[^>]*name=["']viewport["'][^>]*>/i);
-  if (!viewportMatch && !isDocOrSkill) {
+  // 3. Viewport Meta Tag (Native or Next.js managed)
+  const viewportMatch = html.match(/<meta[^>]*name=["']viewport["'][^>]*>/i) ||
+                        /export\s+const\s+viewport\b/.test(html);
+  if (!viewportMatch && !isDocOrSkill && !isNextJs) {
     issues.push({ type: 'error', category: 'Technical', msg: 'Missing viewport meta tag (Critical for Mobile-First indexing).' });
-  } else if (!isDocOrSkill) {
-    passes.push({ category: 'Technical', msg: 'Viewport meta tag present.' });
+  } else {
+    passes.push({ category: 'Technical', msg: isNextJs ? 'Viewport meta tag managed by Next.js.' : 'Viewport meta tag present.' });
   }
 
-  // 4. Canonical Tag
+  // 4. Canonical Tag (HTML link, Next.js alternates.canonical, or frontmatter)
   const canonicalMatch = html.match(/<link[^>]*rel=["']canonical["'][^>]*href=["']([^"']*)["'][^>]*>/i) ||
-                         (fm.canonicalUrl ? [null, fm.canonicalUrl] : null);
+                         (fm.canonicalUrl ? [null, fm.canonicalUrl] : null) ||
+                         (nextMetadata.canonical ? [null, nextMetadata.canonical] : null);
   if (!canonicalMatch && !isDocOrSkill) {
-    issues.push({ type: 'warn', category: 'Technical', msg: 'Missing canonical URL link (<link rel="canonical" href="...">).' });
+    issues.push({ type: 'warn', category: 'Technical', msg: 'Missing canonical URL link (<link rel="canonical" href="..."> or Next.js alternates.canonical).' });
   } else if (canonicalMatch) {
     passes.push({ category: 'Technical', msg: `Canonical URL configured: ${canonicalMatch[1]}` });
   }
 
-  // 5. Open Graph & Social
-  const ogTitle = html.match(/<meta[^>]*property=["']og:title["'][^>]*>/i);
-  const ogImage = html.match(/<meta[^>]*property=["']og:image["'][^>]*>/i);
+  // 5. Open Graph & Social (Tags, Next.js openGraph, or Next.js opengraph-image)
+  const ogTitle = html.match(/<meta[^>]*property=["']og:title["'][^>]*>/i) || nextMetadata.hasOpenGraph;
+  const ogImage = html.match(/<meta[^>]*property=["']og:image["'][^>]*>/i) || nextMetadata.hasOpenGraph || /app\/opengraph-image/i.test(filePath);
   if (!isDocOrSkill) {
     if (!ogTitle || !ogImage) {
       issues.push({ type: 'warn', category: 'Social/Share', msg: 'Incomplete Open Graph tags (og:title or og:image missing).' });
     } else {
-      passes.push({ category: 'Social/Share', msg: 'Open Graph social tags present.' });
+      passes.push({ category: 'Social/Share', msg: 'Open Graph social metadata present.' });
     }
   }
 
   // 6. Heading Hierarchy (H1, H2, H3)
   const h1Matches = [...html.matchAll(/<h1[^>]*>([\s\S]*?)<\/h1>/gi)];
   if (h1Matches.length === 0) {
-    // Check if markdown H1 exists
     const mdH1 = html.match(/^#\s+[^\n]+/m);
     if (!mdH1) {
       issues.push({ type: 'error', category: 'Content/Structure', msg: 'Missing <h1> tag. Every page must contain exactly one <h1>.' });
@@ -202,32 +256,43 @@ export function auditHtml(html, filePath) {
     passes.push({ category: 'Content/Structure', msg: 'Exactly one H1 heading found.' });
   }
 
-  // 7. Image Alt Attributes (actual <img> tags with src)
-  const imgRegex = /<img\s+([^>]*src=["'][^"']+["'][^>]*)>/gi;
+  // 7. Image Alt Attributes & Next.js <Image /> Priority
+  const imgRegex = /<(?:img|Image)\s+([^>]*src=[^>]*)>/gi;
   let totalImages = 0;
   let missingAltImages = 0;
+  let priorityImages = 0;
   let match;
   while ((match = imgRegex.exec(html)) !== null) {
     totalImages++;
     const imgAttrs = match[1];
-    const altMatch = imgAttrs.match(/alt=["']([^"']*)["']/i);
-    if (!altMatch || altMatch[1].trim() === '') {
+    const altMatch = imgAttrs.match(/alt=(?:["']([^"']*)["']|\{([^}]+)\})/i);
+    if (!altMatch || (altMatch[1] && altMatch[1].trim() === '')) {
       missingAltImages++;
     }
+    if (/\bpriority\b/i.test(imgAttrs) || /fetchpriority=["']high["']/i.test(imgAttrs)) {
+      priorityImages++;
+    }
+  }
+
+  if (priorityImages > 0) {
+    passes.push({ category: 'Performance/CWV', msg: `${priorityImages} image(s) configured with priority / fetchpriority="high" for optimal LCP.` });
   }
 
   if (missingAltImages > 0) {
     issues.push({ type: 'error', category: 'Accessibility/SEO', msg: `${missingAltImages} of ${totalImages} image(s) missing descriptive alt attributes.` });
   } else if (totalImages > 0) {
-    passes.push({ category: 'Accessibility/SEO', msg: `All ${totalImages} images have alt attributes.` });
+    passes.push({ category: 'Accessibility/SEO', msg: `All ${totalImages} image(s) have alt attributes.` });
   }
 
-  // 8. Structured Data (JSON-LD)
+  // 8. Structured Data (JSON-LD) - Standard or Next.js dangerouslySetInnerHTML
   const jsonLdRegex = /<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+  const nextLdRegex = /<script\b[^>]*type=["']application\/ld\+json["'][^>]*dangerouslySetInnerHTML=\{\{\s*__html:\s*([\s\S]*?)\}\}[^>]*>/gi;
+  
   let jsonLdCount = 0;
   let validJsonLdCount = 0;
   let schemaTypes = [];
   let scriptMatch;
+
   while ((scriptMatch = jsonLdRegex.exec(html)) !== null) {
     jsonLdCount++;
     try {
@@ -240,6 +305,12 @@ export function auditHtml(html, filePath) {
     }
   }
 
+  while ((scriptMatch = nextLdRegex.exec(html)) !== null) {
+    jsonLdCount++;
+    validJsonLdCount++;
+    schemaTypes.push('Next.js JSON-LD');
+  }
+
   if (jsonLdCount === 0) {
     issues.push({ type: 'warn', category: 'Structured Data', msg: 'No JSON-LD structured data found. Add Schema markup for rich snippets.' });
   } else {
@@ -249,9 +320,9 @@ export function auditHtml(html, filePath) {
   // 9. Word Count & Content Depth
   const cleanText = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
   const words = cleanText ? cleanText.split(/\s+/).length : 0;
-  if (words < 250 && !filePath.endsWith('.json') && !filePath.endsWith('.xml')) {
+  if (words < 250 && !filePath.endsWith('.json') && !filePath.endsWith('.xml') && !isNextJs) {
     issues.push({ type: 'warn', category: 'Content/Depth', msg: `Low text content depth (${words} words). Risk of thin-content demotion.` });
-  } else {
+  } else if (words >= 250) {
     passes.push({ category: 'Content/Depth', msg: `Substantial content depth (${words} words).` });
   }
 
@@ -308,10 +379,13 @@ function printAuditReport(results, extra = {}) {
   // Print Root Domain Health (GEO & Crawlability)
   if (extra.rootAudit) {
     console.log(`\n${colors.bold}${colors.blue}🌐 Root Domain & AI Search Health:${colors.reset}`);
-    const { robotsTxt, sitemapXml, llmsTxt } = extra.rootAudit;
+    const { robotsTxt, sitemapXml, llmsTxt, ogImage } = extra.rootAudit;
     console.log(`   ${robotsTxt ? colors.green + '✔' : colors.red + '✖'} robots.txt: ${robotsTxt ? 'Found' : 'Missing (Crucial for crawler guidance)'}${colors.reset}`);
     console.log(`   ${sitemapXml ? colors.green + '✔' : colors.red + '✖'} sitemap.xml: ${sitemapXml ? 'Found' : 'Missing (Needed for rapid URL discovery)'}${colors.reset}`);
     console.log(`   ${llmsTxt ? colors.green + '✔' : colors.yellow + '⚠'} llms.txt: ${llmsTxt ? 'Found' : 'Missing (Recommended for Generative AI search / GEO)'}${colors.reset}`);
+    if (ogImage) {
+      console.log(`   ${colors.green}✔ opengraph-image: Found (Next.js dynamic social card)${colors.reset}`);
+    }
   }
 
   // Summary
