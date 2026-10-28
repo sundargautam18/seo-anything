@@ -3,7 +3,7 @@
 This project follows the **SEOAnything** comprehensive ranking framework for modern search and AI discovery.
 
 ## Active Skills & Runbooks
-- **`seo-master`**: Master SEO strategy, orchestration, prioritization, and traffic drop recovery.
+- **`seo-master`**: All-in-One Master SEO & GEO intelligence engine. Covers everything across all disciplines without needing specific sub-skills.
 - **`seo-technical`**: Core Web Vitals (LCP, INP, CLS), robots.txt, sitemaps, canonicals, and SSR/SSG rendering.
 - **`seo-keywords`**: 4-Tier search intent classification, topic clustering (Pillar-Cluster), and entity mapping.
 - **`seo-content`**: BLUF answer-first writing, E-E-A-T criteria, and on-page title/meta/heading optimization.

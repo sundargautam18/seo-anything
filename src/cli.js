@@ -3,9 +3,21 @@ import { runAudit } from './auditor.js';
 import { runSchemaCli, SUPPORTED_SCHEMAS } from './schema-generator.js';
 import { generateLlmsTxt } from './llms-generator.js';
 import { generateSitemap } from './sitemap-generator.js';
+import { runInteractiveMenu } from './menu.js';
 import { colors } from './utils.js';
 
 export async function runCli(args = process.argv.slice(2)) {
+  // If run with no arguments, launch the user-friendly interactive menu in interactive environments
+  if (args.length === 0) {
+    if (process.stdin.isTTY) {
+      await runInteractiveMenu(printHelp, printSkillsList);
+      return;
+    } else {
+      printHelp();
+      return;
+    }
+  }
+
   const command = args[0] ? args[0].toLowerCase() : 'help';
   const restArgs = args.slice(1);
 
@@ -30,6 +42,11 @@ export async function runCli(args = process.argv.slice(2)) {
 
   if (flags.v || flags.version || command === '-v' || command === '--version') {
     console.log('seoanything v1.0.0');
+    return;
+  }
+
+  if (flags.i || flags.interactive || command === 'interactive' || command === 'menu') {
+    await runInteractiveMenu(printHelp, printSkillsList);
     return;
   }
 
@@ -104,6 +121,7 @@ ${colors.bold}USAGE:${colors.reset}
   npx seoanything <command> [options]
 
 ${colors.bold}COMMANDS:${colors.reset}
+  ${colors.green}menu / interactive${colors.reset} Launch interactive menu to choose actions visually
   ${colors.green}init / install${colors.reset}     Install SEO skills into your agent or repository
   ${colors.green}audit [path|url]${colors.reset}   Audit technical SEO, meta tags, and GEO readiness
   ${colors.green}schema <type>${colors.reset}      Generate valid JSON-LD structured data
@@ -120,8 +138,9 @@ ${colors.bold}SCHEMA TYPES:${colors.reset}
   ${SUPPORTED_SCHEMAS.join(', ')}
 
 ${colors.bold}EXAMPLES:${colors.reset}
-  ${colors.gray}# Install all skills into current repo for Claude, Cursor, Antigravity, Gemini:${colors.reset}
-  npx seoanything init
+  ${colors.gray}# Launch the user-friendly interactive menu (recommended):${colors.reset}
+  npx seoanything
+
 
   ${colors.gray}# Install specifically for Cursor IDE rules:${colors.reset}
   npx seoanything init --agent=cursor

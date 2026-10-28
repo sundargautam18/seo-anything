@@ -6,13 +6,21 @@ import { findFiles, colors, logHeader } from './utils.js';
  * Audit target: file, directory, or URL
  */
 export async function runAudit(targetPathOrUrl, options = {}) {
-  const isUrl = /^https?:\/\//i.test(targetPathOrUrl);
+  let target = targetPathOrUrl ? String(targetPathOrUrl).trim() : '.';
+  const isUrl = /^https?:\/\//i.test(target);
 
   if (isUrl) {
-    return await auditUrl(targetPathOrUrl, options);
-  } else {
-    return await auditLocal(targetPathOrUrl, options);
+    return await auditUrl(target, options);
   }
+
+  // If target is not an existing local file/dir but matches a domain name pattern (e.g. stroke.click or www.domain.com), treat as https URL
+  if (!fs.existsSync(path.resolve(process.cwd(), target))) {
+    if (/^(www\.)?[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+(\/.*)?$/i.test(target)) {
+      return await auditUrl(`https://${target}`, options);
+    }
+  }
+
+  return await auditLocal(target, options);
 }
 
 /**

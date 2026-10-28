@@ -6,8 +6,11 @@ test('runCli handles --version and list without throwing', async () => {
   // Should complete without error
   await runCli(['--version']);
   await runCli(['list']);
+  await runCli(['help']);
+  await runCli([]);
 });
 
 test('runCli handles schema generation without throwing', async () => {
   await runCli(['schema', 'faq']);
 });
+

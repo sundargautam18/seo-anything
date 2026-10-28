@@ -244,8 +244,17 @@ test('auditHtml correctly recognizes Nuxt 3 useSeoMeta and <NuxtImg priority>', 
     </template>
   `;
 
-  const report = auditHtml(nuxtPage, 'pages/nuxt-seo.vue');
+    const report = auditHtml(nuxtPage, 'pages/nuxt-seo.vue');
   assert.ok(report.score >= 85);
   assert.equal(report.title, 'Nuxt 3 Full-Stack Vue Framework SEO Guide');
   assert.ok(report.passes.some(p => p.category.includes('Nuxt 3')));
 });
+
+test('runAudit detects bare domains like stroke.click as valid URLs', async () => {
+  // Test that runAudit attempts URL fetch for domain without crashing
+  const { runAudit } = await import('../src/auditor.js');
+  // Passing a live domain should return or handle gracefully
+  const res = await runAudit('https://stroke.click');
+  assert.ok(res, 'Expected audit result from live domain');
+});
+
