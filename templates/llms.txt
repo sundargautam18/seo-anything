@@ -1,0 +1,21 @@
+# Site Title / Brand Name
+
+> A concise 1-2 sentence description of what this website, documentation, or product offers.
+
+## Core Documentation & Guides
+
+- [Getting Started](https://example.com/docs/getting-started): Core tutorial and developer onboarding.
+- [Technical Architecture](https://example.com/docs/architecture): System overview, performance metrics, and data models.
+- [API Reference](https://example.com/docs/api): REST and GraphQL endpoints with sample payloads.
+
+## Key Articles & Guides
+
+- [Complete SEO & GEO Guide](https://example.com/blog/seo-guide): In-depth guide to ranking on traditional search and AI engines.
+- [Performance Benchmarks](https://example.com/research/benchmarks): Empirical benchmarks and latency metrics.
+
+## Entity Metadata
+
+- Organization: Example Inc.
+- Primary Category: Software Infrastructure
+- Founded: 2024
+- Official Website: https://example.com

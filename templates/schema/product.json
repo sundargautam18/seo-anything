@@ -1,0 +1,23 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "Acme SaaS Suite",
+  "image": "https://example.com/product.webp",
+  "description": "High performance developer tools.",
+  "brand": {
+    "@type": "Brand",
+    "name": "Acme"
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.9",
+    "reviewCount": "128"
+  },
+  "offers": {
+    "@type": "Offer",
+    "url": "https://example.com/pricing",
+    "priceCurrency": "USD",
+    "price": "49.00",
+    "availability": "https://schema.org/InStock"
+  }
+}

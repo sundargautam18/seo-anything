@@ -1,0 +1,27 @@
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Example Article Headline",
+  "description": "Short description of the article answering search intent.",
+  "image": "https://example.com/cover.webp",
+  "datePublished": "2026-01-01T08:00:00Z",
+  "dateModified": "2026-01-01T08:00:00Z",
+  "author": {
+    "@type": "Person",
+    "name": "Expert Author Name",
+    "jobTitle": "SEO Specialist",
+    "url": "https://example.com/authors/author-name"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Site Name",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://example.com/logo.png"
+    }
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://example.com/blog/article-slug"
+  }
+}

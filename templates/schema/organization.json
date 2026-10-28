@@ -1,0 +1,13 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Acme Software",
+  "url": "https://example.com",
+  "logo": "https://example.com/logo.png",
+  "sameAs": [
+    "https://twitter.com/example",
+    "https://linkedin.com/company/example",
+    "https://github.com/example",
+    "https://www.wikidata.org/wiki/Q123456"
+  ]
+}

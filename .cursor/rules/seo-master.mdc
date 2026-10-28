@@ -1,0 +1,108 @@
+---
+description: "Master SEO strategy, orchestration, prioritization, and traffic drop recovery."
+globs: ["*.html", "*.jsx", "*.tsx", "*.vue", "*.svelte", "*.astro", "*.md", "*.mdx"]
+alwaysApply: false
+---
+
+# Master SEO & Search Strategy Guide
+
+The modern search ecosystem requires a dual-pronged strategy: dominating traditional organic search results (Google, Bing) while actively securing citations and recommendations in generative AI engines (Google AI Overviews, Perplexity, ChatGPT Search, Gemini, Claude).
+
+Use this skill as your command center for diagnosing, prioritizing, and executing comprehensive SEO campaigns.
+
+---
+
+## The 5 Pillars of Ranking
+
+Every website that consistently ranks at the top excels across these 5 pillars:
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│                     THE 5 PILLARS OF RANKING                    │
+├─────────────────┬──────────────────┬────────────────────────────┤
+│ 1. Technical    │ Crawlability     │ Core Web Vitals, Robots,   │
+│    Foundation   │ & Indexability   │ Sitemaps, SSR/SSG, Speed   │
+├─────────────────┼──────────────────┼────────────────────────────┤
+│ 2. Keyword &    │ Search Intent &  │ Pillar-Cluster Model, KD,  │
+│    Topic Hubs   │ Information Arch │ Entities, Long-Tail Intent │
+├─────────────────┼──────────────────┼────────────────────────────┤
+│ 3. Content &    │ E-E-A-T &        │ BLUF Answering, First-Party│
+│    Experience   │ Helpful Content  │ Insights, On-Page Anatomy  │
+├─────────────────┼──────────────────┼────────────────────────────┤
+│ 4. Authority &  │ Internal Link    │ PageRank Sculpting, Silos, │
+│    Link Graph   │ & Backlink Graph │ Digital PR, Unlinked Brand │
+├─────────────────┼──────────────────┼────────────────────────────┤
+│ 5. AI Search    │ Generative Engine│ Statistical Density, LLMs, │
+│    & GEO        │ Optimization     │ Schema, llms.txt, Citations│
+└─────────────────┴──────────────────┴────────────────────────────┘
+```
+
+---
+
+## Strategy Triage: Where to Begin?
+
+When auditing or building a site, address issues in order of impact:
+
+### Stage 1: Critical Blockers (0-7 Days)
+Before writing content or acquiring links, verify:
+1. Is the site crawlable and indexable? (Check `robots.txt`, noindex meta tags, HTTP 5xx errors).
+2. Are canonical tags pointing to self or intended canonical URLs?
+3. Is mobile responsiveness intact with proper viewport tags?
+4. Is SSL/HTTPS configured without mixed content warnings?
+5. Has an XML sitemap and `llms.txt` been deployed to the root?
+
+### Stage 2: Content & On-Page Architecture (Weeks 2-4)
+1. Map 1 primary target keyword and 3-5 semantic entities per page.
+2. Structure page with **BLUF (Bottom Line Up Front)**: Answer the searcher's core query in the first 2-3 sentences.
+3. Optimize title tag (< 60 chars), meta description (< 160 chars), single H1 tag, and descriptive image alt attributes.
+4. Implement rich JSON-LD structured data (Article, Organization, FAQPage, BreadcrumbList).
+
+### Stage 3: Topical Authority & Internal Linking (Weeks 4-8)
+1. Build **Pillar & Cluster Topic Hubs**: One comprehensive master pillar page linked bi-directionally to 5-10 sub-topic cluster posts.
+2. Ensure no orphan pages exist; ensure every key page is reachable within 3 clicks of the home page.
+3. Use descriptive, keyword-rich anchor text internally (avoid "click here", "read more").
+
+### Stage 4: Generative Engine Optimization (GEO) & Authority (Ongoing)
+1. Add verifiable statistics, benchmark tables, and expert author quotes to increase citation likelihood by AI engines.
+2. Build brand consensus on third-party aggregators, Reddit, and industry roundups.
+3. Monitor performance across Google Search Console and AI search prompts.
+
+---
+
+## Specialized Skill Directory & Delegation
+
+Delegate specialized tasks to the appropriate skill:
+
+| Task / Inquiry | Specialized Skill | Action |
+| :--- | :--- | :--- |
+| Core Web Vitals, robots.txt, sitemaps, redirects, SSR/SSG traps | `seo-technical` | Run technical checklist or `node scripts/seo-audit.js` |
+| Finding low-competition keywords, search intent classification | `seo-keywords` | Execute topic clustering and search volume targeting |
+| Writing blog articles, optimizing title/meta, E-E-A-T criteria | `seo-content` | Apply blog playbook and on-page writing checklist |
+| Optimizing for Perplexity, ChatGPT Search, AI Overviews, `llms.txt` | `seo-geo` | Apply BLUF passage formatting and generate `llms.txt` |
+| JSON-LD structured data generation (Article, FAQ, Product, etc.) | `seo-schema` | Generate schema via `node scripts/schema-gen.js` |
+| Internal linking silos, PageRank sculpting, backlink outreach | `seo-links` | Map anchor text and topical link graph |
+| Scaling 100s to 10,000s of automated landing pages | `seo-programmatic` | Structure database-driven templates with >60% unique data |
+| Complete 100-point site audit, diagnosing sudden traffic drops | `seo-audit` | Run full diagnostic decision tree and scanner |
+
+---
+
+## Emergency Protocol: Diagnosing Sudden Traffic Drops
+
+If a site experiences a sudden drop in rankings or traffic, follow this sequential diagnostic protocol:
+
+```text
+[Traffic Drop Detected]
+         │
+         ├──> 1. Technical Check: Did a recent deployment introduce a "noindex" tag, broken robots.txt, or 500 errors?
+         │         └── Tool: Verify via `seoanything audit .` and Google Search Console URL Inspection.
+         │
+         ├──> 2. Tracking Check: Is Google Analytics / GTM tag firing correctly? (Check if bounce rate is 0% or tracking ID changed).
+         │
+         ├──> 3. Algorithmic Update: Did Google release a Core Update, Helpful Content Update, or Spam Update?
+         │         └── Action: Check Search Engine Land update trackers and compare drop date.
+         │
+         ├──> 4. Manual Penalty: Check Google Search Console -> "Security & Manual Actions".
+         │
+         └──> 5. AI Overview Shift: Did an AI Overview or Zero-Click result displace organic CTR for your primary keywords?
+                   └── Action: Optimize passages for GEO inclusion via `seo-geo`.
+```

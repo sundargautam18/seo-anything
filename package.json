@@ -1,0 +1,52 @@
+{
+  "name": "seoanything",
+  "version": "1.0.0",
+  "description": "The ultimate SEO & GEO skill suite for AI agents: Antigravity, Claude Code, Cursor, Gemini, Copilot, and any web repository.",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "seoanything": "bin/seoanything.js",
+    "seo-skills": "bin/seoanything.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "skills",
+    "templates",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "audit": "node bin/seoanything.js audit .",
+    "install:all": "node bin/seoanything.js install --agent=all",
+    "install:cursor": "node bin/seoanything.js install --agent=cursor",
+    "install:claude": "node bin/seoanything.js install --agent=claude",
+    "install:antigravity": "node bin/seoanything.js install --agent=antigravity"
+  },
+  "keywords": [
+    "seo",
+    "geo",
+    "agent-skills",
+    "cursor-rules",
+    "claude-skills",
+    "antigravity",
+    "gemini",
+    "copilot",
+    "search-engine-optimization",
+    "generative-engine-optimization",
+    "perplexity",
+    "ai-overviews",
+    "chatgpt-search",
+    "schema-markup",
+    "json-ld",
+    "llms-txt",
+    "core-web-vitals",
+    "programmatic-seo"
+  ],
+  "author": "SEOAnything Community",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

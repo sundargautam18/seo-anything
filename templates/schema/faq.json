@@ -1,0 +1,22 @@
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How does SEOAnything improve search rankings?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "SEOAnything equips AI agents with rigorous technical, content, keyword clustering, and Generative Engine Optimization standards."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which AI agents are supported?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "SEOAnything natively supports Claude Code, Cursor, Antigravity, Gemini, GitHub Copilot, Windsurf, and universal repositories."
+      }
+    }
+  ]
+}
