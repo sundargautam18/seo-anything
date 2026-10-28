@@ -1,5 +1,24 @@
+# Dependencies & Package managers
 node_modules/
 .npm/
+
+# Logs & Temporary files
 *.log
 .DS_Store
 Thumbs.db
+
+# Generated installer files (package source repository)
+.agents/
+.claude/
+.cursor/
+.windsurfrules
+.github/copilot-instructions.md
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+SEO.md
+
+# Generated SEO output files at root
+/robots.txt
+/sitemap.xml
+/llms.txt

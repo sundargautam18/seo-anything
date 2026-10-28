@@ -1,4 +1,0 @@
-# SEOAnything Guidelines
-- Maintain strict technical SEO, Core Web Vitals (LCP < 2.5s, INP < 200ms), and valid JSON-LD schemas.
-- Use BLUF formatting on informational pages for Generative Engine Optimization (GEO).
-- Run `npx seoanything audit .` to validate pages.
