@@ -6,20 +6,45 @@ export function generateSitemap(baseUrl = 'https://example.com', options = {}) {
   const rootDir = process.cwd();
   const today = new Date().toISOString().split('T')[0];
 
-  const htmlFiles = findFiles(rootDir, ['.html', '.md', '.mdx']);
+  const routeFiles = findFiles(rootDir, ['.html', '.md', '.mdx', '.astro', '.vue', '.svelte', '.tsx', '.jsx']);
   const urls = new Set();
 
   // Always include homepage
   urls.add('/');
 
-  for (const file of htmlFiles) {
+  for (const file of routeFiles) {
     const rel = path.relative(rootDir, file).replace(/\\/g, '/');
-    // Normalize path to clean URL
-    let cleanUrl = '/' + rel.replace(/\.(html|md|mdx)$/, '');
-    if (cleanUrl.endsWith('/index')) {
+    const lower = rel.toLowerCase();
+
+    // Ignore non-page component files
+    if (
+      lower.includes('components/') ||
+      lower.includes('test/') ||
+      lower.includes('tests/') ||
+      lower.includes('/_') ||
+      lower.includes('layout.') ||
+      lower.includes('loading.') ||
+      lower.includes('error.') ||
+      lower.includes('not-found.') ||
+      lower.includes('.config.')
+    ) {
+      continue;
+    }
+
+    // Next.js App Router: app/blog/page.tsx -> /blog
+    let cleanUrl = '/' + rel
+      .replace(/^(src\/)?(app|pages|routes|content)\//i, '')
+      .replace(/\/page\.[a-z0-9]+$/i, '')
+      .replace(/\.[a-z0-9]+$/i, '');
+
+    if (cleanUrl === '/index' || cleanUrl === '') {
+      cleanUrl = '/';
+    } else if (cleanUrl.endsWith('/index')) {
       cleanUrl = cleanUrl.replace(/\/index$/, '') || '/';
     }
-    if (!cleanUrl.startsWith('/node_modules') && !cleanUrl.startsWith('/.')) {
+
+    // Skip dynamic route placeholders in static sitemap (e.g. [slug] or $slug)
+    if (!cleanUrl.includes('[') && !cleanUrl.includes('$') && !cleanUrl.startsWith('/node_modules') && !cleanUrl.startsWith('/.')) {
       urls.add(cleanUrl);
     }
   }

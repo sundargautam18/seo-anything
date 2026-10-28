@@ -89,14 +89,25 @@ Every indexable URL must have an explicit canonical link element in the `<head>`
 
 ---
 
-## 5. Rendering Architectures: SSR, SSG, and Hydration
+## 5. Modern Framework Architectures: Next.js, TanStack Start, Astro, Remix, Nuxt
 
-Modern frontend frameworks (Next.js, Nuxt, Astro, SvelteKit, Remix) handle rendering differently:
+Modern web frameworks handle rendering and metadata differently:
 
-1. **Static Site Generation (SSG)**: Fastest TTFB, zero server overhead. Ideal for blogs, docs, and marketing pages.
-2. **Server-Side Rendering (SSR)**: Generates HTML on the server per request. Ideal for personalized, dynamic, or frequently changing inventory.
-3. **Client-Side Rendering (CSR / SPA)**: Dangerous for SEO. If the initial HTML payload is an empty `<div id="root"></div>`, crawlers may delay execution or fail to parse text and meta tags. Always use pre-rendering or SSR for public pages.
-4. **Hydration Traps**: Ensure server-rendered HTML matches client-rendered markup. Mismatches cause layout shifts (ruining CLS) and can wipe out rendered text before crawlers parse it.
+### Framework Matrix & SEO Patterns:
+
+| Framework | Metadata Pattern | LCP Hero Image Optimization | Sitemaps & Robots |
+| :--- | :--- | :--- | :--- |
+| **Next.js** (App Router) | `export const metadata: Metadata = { ... }`<br>or dynamic `generateMetadata()` | `<Image src="..." alt="..." priority />` | `app/sitemap.ts`<br>`app/robots.ts` |
+| **TanStack Start** | `createFileRoute('/...')({ head: () => ({ meta: [...], links: [...] }) })` | `<img src="..." alt="..." fetchpriority="high" />` | `app/routes/sitemap.xml.ts`<br>`app/routes/robots.txt.ts` |
+| **Astro** | Frontmatter variables or `<SEO title="..." description="..." />` | `<Image src={...} alt="..." loading="eager" />` | `@astrojs/sitemap` in `astro.config.mjs` |
+| **Remix / React Router** | `export const meta: MetaFunction = () => [...]` | `<img src="..." alt="..." fetchpriority="high" />` | `app/routes/sitemap[.]xml.ts` |
+| **Nuxt 3** | `useSeoMeta({ title: '...', description: '...' })` | `<NuxtImg src="..." alt="..." priority />` | `@nuxtjs/sitemap`<br>`@nuxtjs/robots` |
+| **SvelteKit** | `<svelte:head><title>...</title></svelte:head>` | `<img src="..." alt="..." loading="eager" />` | `src/routes/sitemap.xml/+server.ts` |
+
+### Critical Framework Guardrails:
+1. **Never ship empty initial HTML (CSR SPA Trap)**: Always use SSR (Server-Side Rendering) or SSG (Static Site Generation) for public pages.
+2. **Eliminate Hydration CLS**: Server-rendered markup must match client-rendered markup exactly to avoid Cumulative Layout Shift penalties during React/Vue hydration.
+3. **Declare LCP Priorities**: Always mark the primary above-the-fold hero image with `priority` (Next.js/Nuxt) or `loading="eager"` (Astro/HTML).
 
 ---
 

@@ -74,13 +74,13 @@ npx seoanything audit ./app/blog/[slug]/page.tsx
 npx seoanything audit https://example.com/blog/guide
 ```
 
-### Full Next.js Framework Support:
-- **App Router Static Metadata**: Detects `export const metadata: Metadata = { title, description, openGraph, alternates: { canonical } }`.
-- **App Router Dynamic Metadata**: Detects `export async function generateMetadata(...)` and validates dynamic SEO generation.
-- **Next.js `<Image>` & CWV**: Scans `<Image />` components for `alt` attributes and verifies `priority` / `fetchpriority="high"` for LCP hero images.
-- **Next.js Metadata Files**: Recognizes `app/robots.ts` / `robots.js`, `app/sitemap.ts` / `sitemap.js`, and `app/opengraph-image.tsx`.
-- **Next.js JSON-LD**: Recognizes structured data injected via `<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ... }} />`.
-- **Pages Router**: Fully inspects `next/head` `<Head>` tags across `pages/` routes.
+### Full Modern Framework Support:
+- **Next.js (App & Pages Router)**: Detects `metadata`, `generateMetadata()`, `<Image priority>`, `app/robots.ts`, and `app/sitemap.ts`.
+- **TanStack Start**: Detects `createFileRoute` / `createRootRoute` with `head()` (parsing `meta`, `links: [{ rel: 'canonical' }]`, and `scripts: [{ type: 'application/ld+json' }]`).
+- **Astro**: Inspects `.astro` frontmatter, `<SEO />` component attributes, and `astro:assets` `<Image loading="eager" />` for LCP optimization.
+- **Remix & React Router v7**: Inspects `export const meta: MetaFunction = () => [...]` (title, description, canonical link objects).
+- **Nuxt 3**: Inspects `useSeoMeta()`, `useHead()`, and `<NuxtImg priority />` composables and components.
+- **SvelteKit**: Inspects `<svelte:head>` blocks containing titles, descriptions, and canonical links.
 
 ---
 

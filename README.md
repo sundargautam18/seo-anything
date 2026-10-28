@@ -140,33 +140,33 @@ SEOAnything provides 9 granular, production-tested skills built on the open **Ag
 SEOAnything bundles zero-dependency CLI utilities that both developers and AI agents can execute directly:
 
 ### 1. Automated SEO & GEO Auditor
-Audit local directories, Next.js projects, HTML/JSX/Vue/Astro files, or live URLs:
+Audit local directories, Next.js, TanStack Start, Astro, Remix, Nuxt, or live URLs:
 
 ```bash
-# Audit current repository or Next.js app
+# Audit current repository or any modern web app
 npx seoanything audit .
 
 # Audit a specific Next.js page or component
 npx seoanything audit ./app/blog/[slug]/page.tsx
 
-# Audit a specific production page
+# Audit a specific TanStack Start route
+npx seoanything audit ./src/routes/posts/$postId.tsx
+
+# Audit a specific Astro page
+npx seoanything audit ./src/pages/guide.astro
+
+# Audit a live production page
 npx seoanything audit https://example.com/blog/my-guide
 ```
 
-**Checks & Framework Features:**
-- ✅ **Next.js App Router**: Parses `export const metadata`, dynamic `generateMetadata()`, and `alternates.canonical`
-- ✅ **Next.js `<Image />` & Core Web Vitals**: Detects `priority` / `fetchpriority="high"` for LCP hero optimization and audits `alt` attributes
-- ✅ **Next.js Metadata Files**: Recognizes `app/robots.ts`, `app/sitemap.ts`, and `app/opengraph-image.tsx`
-- ✅ **Next.js JSON-LD**: Audits structured data in `<script type="application/ld+json" dangerouslySetInnerHTML={{ ... }} />`
-- ✅ Title & Meta description presence & length constraints (40–60 chars title, 140–160 chars meta)
-- ✅ Viewport configuration (Mobile-first indexing)
-- ✅ Canonical tag validation
-- ✅ Open Graph & Twitter Social Cards
-- ✅ Heading hierarchy (Ensures single `<h1>`, flags skipped levels)
-- ✅ Image `alt` attributes on rendered elements
-- ✅ JSON-LD schema syntax & type detection
-- ✅ Content word count & thin-content risk
-- ✅ Root health: `robots.txt`, `sitemap.xml`, and `llms.txt`
+**Comprehensive Multi-Framework Support:**
+- ⚡ **Next.js (App & Pages Router)**: Parses `export const metadata`, dynamic `generateMetadata()`, `<Image priority>`, `app/robots.ts`, `app/sitemap.ts`, and `app/opengraph-image.tsx`.
+- ⚡ **TanStack Start**: Parses `createFileRoute` / `createRootRoute` with `head()`, extracting `meta`, canonical `links`, OpenGraph, and JSON-LD `scripts`.
+- ⚡ **Astro**: Parses `.astro` frontmatter variables, `<SEO />` component attributes, and `astro:assets` `<Image loading="eager" />` for LCP hero optimization.
+- ⚡ **Remix / React Router v7**: Parses `export const meta: MetaFunction = () => [...]` (title, description, canonical link objects).
+- ⚡ **Nuxt 3**: Parses `useSeoMeta()`, `useHead()`, and `<NuxtImg priority />` composables and components.
+- ⚡ **SvelteKit**: Parses `<svelte:head>` blocks containing titles, descriptions, and canonical links.
+- 🔍 **General Checks**: Title & Meta descriptions, single `<h1>` hierarchy, image `alt` attributes, JSON-LD schema syntax, `llms.txt`, and XML sitemaps.
 
 ### 2. JSON-LD Schema Generator
 Instantly generate validated, copy-pasteable JSON-LD schemas:
